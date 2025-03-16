@@ -96,7 +96,12 @@ io.on('connection', (socket) => {
     io.to(data.id).emit('answer', { data: data.answer });
   });
 });
-
+setInterval(() => {
+  io.fetchSockets().then((sockets) => {
+    const connectionSockets = sockets.map((s) => s.id);
+    waitingUser = waitingUser.filter((id) => connectionSockets.includes(id));
+  });
+}, 2000);
 const PORT = 5000;
 server.listen(PORT, () => {
   console.log(` Deep Server is running on port ${PORT}`);
