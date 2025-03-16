@@ -42,8 +42,8 @@ io.on('connection', (socket) => {
     }
   }
   socket.on('disconnect', () => {
-    waitingUser = waitingUser.filter((user) => user !== socket.id);
-    const z = arr.find(
+    waitingUser = waitingUser?.filter((user) => user !== socket.id);
+    const z = arr?.find(
       (obj) => obj.socketId == socket.id || obj.waitingUserId == socket.id
     );
     if (z) {
@@ -74,12 +74,12 @@ io.on('connection', (socket) => {
         }
       }
       console.log('after waiting user', waitingUser);
-      arr = arr.filter(
+      arr = arr?.filter(
         (obj) => obj.socketId !== socket.id && obj.waitingUserId !== socket.id
       );
       console.log('after arr', arr);
     }
-    waitingUser = waitingUser.filter((user) => user !== socket.id);
+    waitingUser = waitingUser?.filter((user) => user !== socket.id);
   });
 
   socket.on('offer', (data) => {
