@@ -1,12 +1,25 @@
 const express = require('express');
-const http = require('http');
+const https = require('https');
+const path =require("path")
+const fs  =require('fs')
 const { Server } = require('socket.io');
-
+const cors = require('cors');
 const app = express();
-const server = http.createServer(app);
+const server = https.createServer({
+  key:"",
+  cert:""
+},app);
+var corsOptions = {
+  origin: '*',
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+app.use(cors(corsOptions));
 const io = new Server(server, {
   cors: {
     origin: '*',
+    methods: ['GET', 'POST'],
+    // allowedHeaders: ['my-custom-header'],
+    credentials: true,
   },
 });
 
