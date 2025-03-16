@@ -32,7 +32,6 @@ io.on('connection', (socket) => {
 
   // Handle signaling (WebRTC offer/answer/candidate exchange)
 
-
   // offer
   socket.on('offer', (data) => {
     // console.log('data is', data);
@@ -57,15 +56,19 @@ io.on('connection', (socket) => {
     users = users.filter((user) => user !== socket.id);
     io.sockets.emit('users', users);
   });
-});
 
-setInterval(() => {
-  io.fetchSockets().then((sockets) => {
-    const connectionSockets = sockets.map((s) => s.id);
-    users = users.filter((id) => connectionSockets.includes(id));
-    // io.sockets.emit('users', users);
+  socket.on('disconnect2', ({ id }) => {
+    console.log('disconnect2 id is', id);
+    io.to(id).emit('disconnect2');
   });
-}, 10000);
+  setInterval(() => {
+    io.fetchSockets().then((sockets) => {
+      const connectionSockets = sockets.map((s) => s.id);
+      users = users.filter((id) => connectionSockets.includes(id));
+      // io.sockets.emit('users', users);
+    });
+  }, 10000);
+});
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
