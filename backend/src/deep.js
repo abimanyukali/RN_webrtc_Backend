@@ -18,6 +18,7 @@ var corsOptions = {
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 app.use(cors(corsOptions));
+
 const io = new Server(server, {
   cors: {
     origin: '*',
@@ -126,7 +127,7 @@ setInterval(() => {
   });
 }, 2000);
 
-const PORT = 443;
+const PORT = 5000;
 server.listen(PORT, () => {
   console.log(` Deep Server is running on port ${PORT}`);
 });
