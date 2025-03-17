@@ -1,14 +1,18 @@
 const express = require('express');
 const https = require('https');
-const path =require("path")
-const fs  =require('fs')
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const app = express();
-const server = https.createServer({
-  key:"",
-  cert:""
-},app);
+const server = http.createServer(
+  {
+    key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
+    cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem')),
+  },
+  app
+);
 var corsOptions = {
   origin: '*',
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -21,8 +25,14 @@ const io = new Server(server, {
     // allowedHeaders: ['my-custom-header'],
     credentials: true,
   },
+  transports: ['websocket'], // Force WebSocket transport only
+  secure: true, // Enable secure connection
+  allowEIO3:true
 });
-
+app.get('/', (req, res) => {
+  console.log('some one connected');
+  res.send('hello world');
+});
 let waitingUser = [];
 let arr = [];
 let b = null;
@@ -115,7 +125,8 @@ setInterval(() => {
     waitingUser = waitingUser.filter((id) => connectionSockets.includes(id));
   });
 }, 2000);
-const PORT = 5000;
+
+const PORT = 443;
 server.listen(PORT, () => {
   console.log(` Deep Server is running on port ${PORT}`);
 });
