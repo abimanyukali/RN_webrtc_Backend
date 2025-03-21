@@ -28,7 +28,7 @@ const io = new Server(server, {
   },
   transports: ['websocket'], // Force WebSocket transport only
   secure: true, // Enable secure connection
-  allowEIO3:true
+  allowEIO3: true,
 });
 app.get('/', (req, res) => {
   console.log('some one connected');
@@ -49,7 +49,7 @@ io.on('connection', (socket) => {
   socket.emit('yourId', socket.id);
 
   socket.emit('total', onlieUsers());
-  if (waitingUser.length > 0 && waitingUser[-1] !== socket.id) {
+  if (waitingUser.length > 0 && waitingUser.at(-1) !== socket.id) {
     const partnerId = waitingUser.pop();
 
     arr.push({
@@ -83,9 +83,9 @@ io.on('connection', (socket) => {
       }
     }
     if (c) {
-      io.to(c).emit('partner-disconnected');
+      io.to(c).emit('disconnect2');
       io.to(c).emit('call-end');
-      if (waitingUser.length > 0 && waitingUser[-1] !== c) {
+      if (waitingUser.length > 0 && waitingUser.at(-1) !== c) {
         let partnerId = waitingUser.pop();
         arr.push({
           waitingUserId: partnerId,
@@ -107,17 +107,58 @@ io.on('connection', (socket) => {
   });
 
   socket.on('offer', (data) => {
-    console.log('offer is', data);
+    // console.log('offer is', data);
     io.to(data.id).emit('offer', { data: data.offer, id: socket.id });
   });
   socket.on('ice-candidate', (data) => {
-    console.log('ICS is :', data);
+    // console.log('ICS is :', data);
     io.to(data.id).emit('ice-candidate', { event: data.event });
   });
 
   socket.on('answer', (data) => {
-    console.log('answer is', data);
+    // console.log('answer is', data);
     io.to(data.id).emit('answer', { data: data.answer });
+  });
+
+  socket.on('next', ({ partnerId }) => {
+    // io.to(data.partnerId).emit('disconnect2');
+    console.log('socket.id', socket.id);
+    console.log('partnerId is', partnerId);
+    socket.emit('disconnect2');
+    io.to(partnerId, 'disconnect2');
+    arr = arr?.filter(
+      (obj) => obj.socketId !== socket.id && obj.waitingUserId !== socket.id
+    );
+    if (
+      waitingUser.length > 0 &&
+      waitingUser.at(-1) !== partnerId &&
+      partnerId
+    ) {
+      let partnerId2 = waitingUser.pop();
+      arr.push({
+        waitingUserId: partnerId2,
+        socketId: partnerId,
+      });
+      io.to(partnerId2).emit('partner-found', partnerId);
+    } else {
+      if (!waitingUser.includes(partnerId)) {
+        waitingUser.unshift(partnerId);
+      }
+    }
+    if (waitingUser.length > 0 && waitingUser.at(-1) !== socket.id) {
+      let partnerId2 = waitingUser.pop();
+      arr.push({
+        waitingUserId: partnerId2,
+        socketId: socket.id,
+      });
+      io.to(partnerId2).emit('partner-found', socket.id);
+    } else {
+      if (!waitingUser.includes(socket.id)) {
+        waitingUser.unshift(socket.id);
+      }
+    }
+
+    console.log('after arr', arr);
   });
 });
 setInterval(() => {
